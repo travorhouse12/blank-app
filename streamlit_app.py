@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import pandas as pd
 import time
-import threading
 
 # Replace with your actual Google Maps API key
 GOOGLE_API_KEY = st.secrets["GOOGLE"]["key"]
@@ -69,16 +68,6 @@ def get_google_place_details(place_id):
     response = requests.get(url, params=params)
     return response.json().get('result', {})
 
-def emoji_spinner(status_text, stop_spinner):
-    """Function to rotate emojis until search is done."""
-    animal_emojis = ["🐎", "🐕", "🐴", "🐶", "🏇", "🦮"]
-    while not stop_spinner.is_set():
-        for emoji in animal_emojis:
-            if stop_spinner.is_set():
-                break
-            status_text.text(f"{emoji} Searching for businesses...")
-            time.sleep(0.3)
-
 # Streamlit UI
 st.title("Local Business Finder (Google API Only)")
 search_term = st.text_input("Enter a search term (e.g., 'horse products', 'animal feed')", "animal feed")
@@ -89,28 +78,30 @@ min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10
 # Convert miles to meters
 radius_meters = radius_miles * 1609.34
 
+# Animal emojis to cycle through
+animal_emojis = ["🐎","🐕", "🐴", "🐶", "🏇", "🦮"]
+
 # Adding a custom rotating emoji spinner during the search operation
 if st.button("Search"):
     status_text = st.empty()  # Placeholder for rotating emoji messages
-    stop_spinner = threading.Event()  # Event to control spinner stop
 
-    # Start the spinner in a separate thread
-    spinner_thread = threading.Thread(target=emoji_spinner, args=(status_text, stop_spinner))
-    spinner_thread.start()
+    # Cycle through animal emojis in the status text
+    for _ in range(15):  # Adjust range for how long to show rotating emojis
+        for emoji in animal_emojis:
+            status_text.text(f"{emoji} Searching for businesses...")
+            time.sleep(0.3)  # Adjust speed of rotation if desired
 
-    # Run the main search function
+    # Get coordinates for the city
     location = get_coordinates(city)
     if location:
+        # Perform the search if coordinates were retrieved
         google_results = search_google_maps(search_term, location, radius_meters)
         
         # Convert results to DataFrame and filter by minimum reviews
         results_df = pd.DataFrame(google_results)
 
         # Clear the rotating emoji message after search completes
-        stop_spinner.set()  # Signal the spinner thread to stop
-        spinner_thread.join()  # Wait for the spinner to stop
-
-        status_text.empty()  # Clear spinner message
+        status_text.empty()
 
         # Ensure 'Reviews' column exists before filtering
         if 'Reviews' in results_df.columns:

@@ -102,7 +102,7 @@ if st.button("Search"):
                 st.dataframe(
                     results_df,
                     column_config={
-                        "Website": st.column_config.LinkColumn("Website", required=False)
+                        "Website": st.column_config.LinkColumn("Website", required=False, display_text="Visit Website")
                     }
                 )
             else:

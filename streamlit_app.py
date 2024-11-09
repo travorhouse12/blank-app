@@ -4,7 +4,7 @@ import pandas as pd
 import time
 
 # Replace with your actual Google Maps API key
-GOOGLE_API_KEY = 'AIzaSyCJsAo-LfwDFtSiaB0pyYKnTdgFZBZJCmA'
+GOOGLE_API_KEY = st.secrets["GOOGLE"]["key"]
 
 def get_coordinates(city):
     """Retrieve latitude and longitude for a given city name using Google Geocoding API."""

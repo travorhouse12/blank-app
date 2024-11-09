@@ -73,7 +73,7 @@ def get_google_place_details(place_id):
 st.title("Local Business Finder (Google API Only)")
 search_term = st.text_input("Enter a search term (e.g., 'horse products', 'porn')", "animal feed")
 city = st.text_input("Enter the city and state (e.g., 'Grants Pass, OR')", "Grants Pass, Oregon")
-radius_miles = st.slider("Select search radius (miles)", min_value=1, max_value=500, value=25, step=25)
+radius_miles = st.slider("Select search radius (miles)", min_value=0, max_value=500, value=25, step=25)
 min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10)
 
 # Convert miles to meters

@@ -29,7 +29,7 @@ def get_coordinates(city):
         return None
 
 def search_google_maps(query, location, radius_meters=5000):
-    """Search for nearby businesses using Google Places API."""
+    """Search for nearby businesses using Google Places API with pagination."""
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     params = {
         'key': GOOGLE_API_KEY,
@@ -37,24 +37,37 @@ def search_google_maps(query, location, radius_meters=5000):
         'radius': radius_meters,
         'keyword': query
     }
-    response = requests.get(url, params=params)
-    results = response.json().get('results', [])
-    
     businesses = []
-    for place in results:
-        place_id = place['place_id']
-        details = get_google_place_details(place_id)
-        if details:
-            businesses.append({
-                'Name': details.get('name', 'N/A'),
-                'Website': details.get('website', 'N/A'),  # Website column moved next to Name
-                'Address': details.get('formatted_address', 'N/A'),
-                'Phone': details.get('formatted_phone_number', 'N/A'),
-                'Reviews': details.get('user_ratings_total', 0),
-                'Rating': details.get('rating', 'N/A'),
-                'Categories': ', '.join(details.get('types', []))
-            })
-        time.sleep(0.2)  # Rate limit to avoid exceeding API quotas
+    while True:
+        response = requests.get(url, params=params)
+        data = response.json()
+        results = data.get('results', [])
+        
+        # Process and store the results
+        for place in results:
+            place_id = place['place_id']
+            details = get_google_place_details(place_id)
+            if details:
+                businesses.append({
+                    'Name': details.get('name', 'N/A'),
+                    'Website': details.get('website', 'N/A'),
+                    'Address': details.get('formatted_address', 'N/A'),
+                    'Phone': details.get('formatted_phone_number', 'N/A'),
+                    'Reviews': details.get('user_ratings_total', 0),
+                    'Rating': details.get('rating', 'N/A'),
+                    'Categories': ', '.join(details.get('types', [])),
+                    'Price Level': details.get('price_level', 'N/A')
+                })
+            time.sleep(0.2)  # Rate limit to avoid exceeding API quotas
+
+        # Check if there's a next page and update the params
+        next_page_token = data.get("next_page_token")
+        if next_page_token:
+            time.sleep(2)  # Short delay before requesting the next page
+            params['pagetoken'] = next_page_token
+        else:
+            break  # No more pages, exit the loop
+
     return businesses
 
 def get_google_place_details(place_id):
@@ -96,13 +109,13 @@ if st.button("Search"):
             else:
                 st.write("No review data available for filtering.")
 
-            # Configure the Website column as a clickable link
+            # Configure the Website column as a clickable link and display results
             if not results_df.empty:
                 st.write("Businesses found:")
                 st.dataframe(
                     results_df,
                     column_config={
-                        "Website": st.column_config.LinkColumn("Website", required=False, display_text="Visit Website")
+                        "Website": st.column_config.LinkColumn("Website", required=False)
                     }
                 )
             else:

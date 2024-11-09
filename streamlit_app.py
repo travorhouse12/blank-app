@@ -29,13 +29,13 @@ def get_coordinates(city):
         st.write("Could not retrieve coordinates for the specified city. Please check the city name and try again.")
         return None
 
-def search_google_maps(query, location, radius=5000):
+def search_google_maps(query, location, radius_meters=5000):
     """Search for nearby businesses using Google Places API."""
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     params = {
         'key': GOOGLE_API_KEY,
         'location': location,  # Coordinates in "lat,lng" format
-        'radius': radius,
+        'radius': radius_meters,
         'keyword': query
     }
     response = requests.get(url, params=params)
@@ -71,17 +71,20 @@ def get_google_place_details(place_id):
 
 # Streamlit UI
 st.title("Local Business Finder (Google API Only)")
-search_term = st.text_input("Enter a search term (e.g., 'horse products', 'outdoor products')", "horse products")
-city = st.text_input("Enter the city name (e.g., 'Los Angeles')", "Los Angeles")
-radius = st.slider("Select search radius (meters)", min_value=1000, max_value=50000, value=5000)
+search_term = st.text_input("Enter a search term (e.g., 'horse products', 'porn')", "animal feed")
+city = st.text_input("Enter the city and state (e.g., 'Grants Pass, OR')", "Grants Pass, Oregon")
+radius_miles = st.slider("Select search radius (miles)", min_value=1, max_value=500, value=25, step=25)
 min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10)
+
+# Convert miles to meters
+radius_meters = radius_miles * 1609.34
 
 if st.button("Search"):
     # Get coordinates for the city
     location = get_coordinates(city)
     if location:
         # Perform the search if coordinates were retrieved
-        google_results = search_google_maps(search_term, location, radius)
+        google_results = search_google_maps(search_term, location, radius_meters)
         
         # Convert results to DataFrame and filter by minimum reviews
         results_df = pd.DataFrame(google_results)

@@ -79,34 +79,39 @@ min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10
 radius_meters = radius_miles * 1609.34
 
 # Animal emojis to cycle through
-animal_emojis = ["🐎","🐴", "🏇"]
+animal_emojis = ["🐎","🐕", "🐴", "🐶", "🏇", "🦮"]
 
-# Adding a spinner during the search operation
+# Adding a custom rotating emoji spinner during the search operation
 if st.button("Search"):
-    with st.spinner("Searching for businesses..."):
-        # Cycle through animal emojis
+    status_text = st.empty()  # Placeholder for rotating emoji messages
+
+    # Cycle through animal emojis in the status text
+    for _ in range(10):  # Adjust range for how long to show rotating emojis
         for emoji in animal_emojis:
-            st.spinner(f"Searching {emoji}")
+            status_text.text(f"{emoji} Searching for businesses...")
             time.sleep(0.3)  # Adjust speed of rotation if desired
 
-        # Get coordinates for the city
-        location = get_coordinates(city)
-        if location:
-            # Perform the search if coordinates were retrieved
-            google_results = search_google_maps(search_term, location, radius_meters)
-            
-            # Convert results to DataFrame and filter by minimum reviews
-            results_df = pd.DataFrame(google_results)
+    # Get coordinates for the city
+    location = get_coordinates(city)
+    if location:
+        # Perform the search if coordinates were retrieved
+        google_results = search_google_maps(search_term, location, radius_meters)
+        
+        # Convert results to DataFrame and filter by minimum reviews
+        results_df = pd.DataFrame(google_results)
 
-            # Ensure 'Reviews' column exists before filtering
-            if 'Reviews' in results_df.columns:
-                results_df = results_df[results_df['Reviews'] >= min_reviews]
-            else:
-                st.write("No review data available for filtering.")
+        # Clear the rotating emoji message after search completes
+        status_text.empty()
 
-            # Display the results
-            if not results_df.empty:
-                st.write("Businesses found:")
-                st.dataframe(results_df)
-            else:
-                st.write("No businesses found for this search term, location, and review threshold.")
+        # Ensure 'Reviews' column exists before filtering
+        if 'Reviews' in results_df.columns:
+            results_df = results_df[results_df['Reviews'] >= min_reviews]
+        else:
+            st.write("No review data available for filtering.")
+
+        # Display the results
+        if not results_df.empty:
+            st.write("Businesses found:")
+            st.dataframe(results_df)
+        else:
+            st.write("No businesses found for this search term, location, and review threshold.")

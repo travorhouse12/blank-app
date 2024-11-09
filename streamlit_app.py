@@ -47,13 +47,12 @@ def search_google_maps(query, location, radius_meters=5000):
         if details:
             businesses.append({
                 'Name': details.get('name', 'N/A'),
+                'Website': details.get('website', 'N/A'),  # Website column moved next to Name
                 'Address': details.get('formatted_address', 'N/A'),
                 'Phone': details.get('formatted_phone_number', 'N/A'),
-                'Website': details.get('website', 'N/A'),  # Added website field
                 'Reviews': details.get('user_ratings_total', 0),
                 'Rating': details.get('rating', 'N/A'),
-                'Categories': ', '.join(details.get('types', [])),
-                'Price Level': details.get('price_level', 'N/A')
+                'Categories': ', '.join(details.get('types', []))
             })
         time.sleep(0.2)  # Rate limit to avoid exceeding API quotas
     return businesses
@@ -103,7 +102,7 @@ if st.button("Search"):
                 st.dataframe(
                     results_df,
                     column_config={
-                        "Website": st.column_config.LinkColumn("Website", required=False, display_text="Visit Website")
+                        "Website": st.column_config.LinkColumn("Website", required=False)
                     }
                 )
             else:

@@ -49,6 +49,7 @@ def search_google_maps(query, location, radius_meters=5000):
                 'Name': details.get('name', 'N/A'),
                 'Address': details.get('formatted_address', 'N/A'),
                 'Phone': details.get('formatted_phone_number', 'N/A'),
+                'Website': details.get('website', 'N/A'),  # Added website field
                 'Reviews': details.get('user_ratings_total', 0),
                 'Rating': details.get('rating', 'N/A'),
                 'Categories': ', '.join(details.get('types', [])),
@@ -63,7 +64,7 @@ def get_google_place_details(place_id):
     params = {
         'key': GOOGLE_API_KEY,
         'place_id': place_id,
-        'fields': 'name,formatted_address,formatted_phone_number,user_ratings_total,rating,types,price_level'
+        'fields': 'name,formatted_address,formatted_phone_number,website,user_ratings_total,rating,types,price_level'
     }
     response = requests.get(url, params=params)
     return response.json().get('result', {})
@@ -96,9 +97,14 @@ if st.button("Search"):
             else:
                 st.write("No review data available for filtering.")
 
-            # Display the results
+            # Configure the Website column as a clickable link
             if not results_df.empty:
                 st.write("Businesses found:")
-                st.dataframe(results_df)
+                st.dataframe(
+                    results_df,
+                    column_config={
+                        "Website": st.column_config.LinkColumn("Website", required=False, display_text="Visit Website")
+                    }
+                )
             else:
                 st.write("No businesses found for this search term, location, and review threshold.")

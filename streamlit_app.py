@@ -86,7 +86,7 @@ if st.button("Search"):
     status_text = st.empty()  # Placeholder for rotating emoji messages
 
     # Cycle through animal emojis in the status text
-    for _ in range(10):  # Adjust range for how long to show rotating emojis
+    for _ in range(100):  # Adjust range for how long to show rotating emojis
         for emoji in animal_emojis:
             status_text.text(f"{emoji} Searching for businesses...")
             time.sleep(0.3)  # Adjust speed of rotation if desired

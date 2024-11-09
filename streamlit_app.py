@@ -78,9 +78,17 @@ min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10
 # Convert miles to meters
 radius_meters = radius_miles * 1609.34
 
+# Animal emojis to cycle through
+animal_emojis = ["🐎","🐴", "🏇"]
+
 # Adding a spinner during the search operation
 if st.button("Search"):
     with st.spinner("Searching for businesses..."):
+        # Cycle through animal emojis
+        for emoji in animal_emojis:
+            st.spinner(f"Searching {emoji}")
+            time.sleep(0.3)  # Adjust speed of rotation if desired
+
         # Get coordinates for the city
         location = get_coordinates(city)
         if location:

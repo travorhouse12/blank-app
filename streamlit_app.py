@@ -16,7 +16,6 @@ def get_coordinates(city):
     response = requests.get(url, params=params)
     data = response.json()
     
-    # Check for errors in the response
     if data.get("status") != "OK":
         st.write(f"Geocoding error: {data.get('status')}")
         return None
@@ -34,7 +33,7 @@ def search_google_maps(query, location, radius_meters=5000):
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     params = {
         'key': GOOGLE_API_KEY,
-        'location': location,  # Coordinates in "lat,lng" format
+        'location': location,
         'radius': radius_meters,
         'keyword': query
     }
@@ -50,7 +49,7 @@ def search_google_maps(query, location, radius_meters=5000):
                 'Name': details.get('name', 'N/A'),
                 'Address': details.get('formatted_address', 'N/A'),
                 'Phone': details.get('formatted_phone_number', 'N/A'),
-                'Reviews': details.get('user_ratings_total', 0),  # Default to 0 if missing
+                'Reviews': details.get('user_ratings_total', 0),
                 'Rating': details.get('rating', 'N/A'),
                 'Categories': ', '.join(details.get('types', [])),
                 'Price Level': details.get('price_level', 'N/A')
@@ -71,33 +70,35 @@ def get_google_place_details(place_id):
 
 # Streamlit UI
 st.title("Local Business Finder (Google API Only)")
-search_term = st.text_input("Enter a search term (e.g., 'horse products', 'porn')", "animal feed")
+search_term = st.text_input("Enter a search term (e.g., 'horse products', 'animal feed')", "animal feed")
 city = st.text_input("Enter the city and state (e.g., 'Grants Pass, OR')", "Grants Pass, Oregon")
-radius_miles = st.slider("Select search radius (miles)", min_value=0, max_value=30, value=5, step=55)
+radius_miles = st.slider("Select search radius (miles)", min_value=1, max_value=30, value=5)
 min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10)
 
 # Convert miles to meters
 radius_meters = radius_miles * 1609.34
 
+# Adding a spinner during the search operation
 if st.button("Search"):
-    # Get coordinates for the city
-    location = get_coordinates(city)
-    if location:
-        # Perform the search if coordinates were retrieved
-        google_results = search_google_maps(search_term, location, radius_meters)
-        
-        # Convert results to DataFrame and filter by minimum reviews
-        results_df = pd.DataFrame(google_results)
+    with st.spinner("Searching for businesses..."):
+        # Get coordinates for the city
+        location = get_coordinates(city)
+        if location:
+            # Perform the search if coordinates were retrieved
+            google_results = search_google_maps(search_term, location, radius_meters)
+            
+            # Convert results to DataFrame and filter by minimum reviews
+            results_df = pd.DataFrame(google_results)
 
-        # Ensure 'Reviews' column exists before filtering
-        if 'Reviews' in results_df.columns:
-            results_df = results_df[results_df['Reviews'] >= min_reviews]
-        else:
-            st.write("No review data available for filtering.")
+            # Ensure 'Reviews' column exists before filtering
+            if 'Reviews' in results_df.columns:
+                results_df = results_df[results_df['Reviews'] >= min_reviews]
+            else:
+                st.write("No review data available for filtering.")
 
-        # Display the results
-        if not results_df.empty:
-            st.write("Businesses found:")
-            st.dataframe(results_df)
-        else:
-            st.write("No businesses found for this search term, location, and review threshold.")
+            # Display the results
+            if not results_df.empty:
+                st.write("Businesses found:")
+                st.dataframe(results_df)
+            else:
+                st.write("No businesses found for this search term, location, and review threshold.")

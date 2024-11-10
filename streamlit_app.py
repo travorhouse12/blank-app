@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 import time
 
+st.set_page_config(layout="wide")
+
 st.logo("https://horseprerace.com/wp-content/uploads/2024/08/cropped-New-Logo-01-2048x479.png", size="large")
 
 # Replace with your actual Google Maps API key

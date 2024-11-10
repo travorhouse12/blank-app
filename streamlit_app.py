@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 import time
 
+st.logo("https://horseprerace.com/wp-content/uploads/2024/08/cropped-New-Logo-01-2048x479.png", size="large")
+
 # Replace with your actual Google Maps API key
 GOOGLE_API_KEY = st.secrets["GOOGLE"]["key"]
 
@@ -79,9 +81,6 @@ def get_google_place_details(place_id):
     }
     response = requests.get(url, params=params)
     return response.json().get('result', {})
-
-# Streamlit UI
-st.title("🐴 Business Finder")
 
 # Step 1: Enter search term
 with st.container(border=True):

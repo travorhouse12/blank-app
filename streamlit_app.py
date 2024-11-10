@@ -55,8 +55,7 @@ def search_google_maps(query, location, radius_meters=5000):
                     'Phone': details.get('formatted_phone_number', 'N/A'),
                     'Reviews': details.get('user_ratings_total', 0),
                     'Rating': details.get('rating', 'N/A'),
-                    'Categories': ', '.join(details.get('types', [])),
-                    'Price Level': details.get('price_level', 'N/A')
+                    'Categories': ', '.join(details.get('types', []))
                 })
             time.sleep(0.2)  # Rate limit to avoid exceeding API quotas
 
@@ -82,11 +81,27 @@ def get_google_place_details(place_id):
     return response.json().get('result', {})
 
 # Streamlit UI
-st.title("Local Business Finder (Google API Only)")
-search_term = st.text_input("Enter a search term (e.g., 'horse products', 'animal feed')", "animal feed")
-city = st.text_input("Enter the city and state (e.g., 'Grants Pass, OR')", "Grants Pass, Oregon")
-radius_miles = st.slider("Select search radius (miles)", min_value=1, max_value=30, value=5)
-min_reviews = st.number_input("Minimum number of reviews", min_value=0, value=10)
+st.title("🐴 Business Finder")
+
+# Step 1: Enter search term
+with st.container(border=True):
+    st.subheader("1. Enter a Search Term")
+    search_term = st.text_input("", "animal feed")
+
+# Step 2: Enter city and state
+with st.container(border=True):
+    st.subheader("2. Enter City and State", help='The correct format is "City, State"')
+    city = st.text_input("", "Grants Pass, Oregon")
+
+# Step 3: Select search radius
+with st.container(border=True):
+    st.subheader("3. Select Search Radius (Miles)", help="The maximum radius that Google allows is 30 miles")
+    radius_miles = st.slider("", min_value=1, max_value=30, value=30)
+
+# Step 4: Set maximum reviews filter
+with st.container(border=True):
+    st.subheader("4. Set Maximum Number of Reviews")
+    max_reviews = st.number_input("", min_value=0, value=1000)
 
 # Convert miles to meters
 radius_meters = radius_miles * 1609.34
@@ -105,7 +120,7 @@ if st.button("Search"):
 
             # Ensure 'Reviews' column exists before filtering
             if 'Reviews' in results_df.columns:
-                results_df = results_df[results_df['Reviews'] >= min_reviews]
+                results_df = results_df[results_df['Reviews'] <= max_reviews]
             else:
                 st.write("No review data available for filtering.")
 
@@ -115,7 +130,7 @@ if st.button("Search"):
                 st.dataframe(
                     results_df,
                     column_config={
-                        "Website": st.column_config.LinkColumn("Website", required=False)
+                        "Website": st.column_config.LinkColumn("Website", required=False, display_text="Visit Website")
                     }
                 )
             else:
